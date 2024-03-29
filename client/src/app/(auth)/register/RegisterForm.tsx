@@ -2,8 +2,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
-  LoginBody,
-  LoginBodyType,
   RegisterBody,
   RegisterBodyType,
 } from "@/schemaValidations/auth.schema";
@@ -17,20 +15,27 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import http from "@/lib/http";
 export default function RegisterForm() {
   // 1. Define your form.
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
       username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: RegisterBodyType) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: RegisterBodyType) {
+    try {
+      const response = await http.post("/users/register", values, {
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log(response);
+    } catch (error) {}
   }
   return (
     <div className="min-w-[400px]">
