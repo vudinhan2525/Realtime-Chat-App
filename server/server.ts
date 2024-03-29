@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import _app from "./app";
 dotenv.config({ path: "./config.env" });
 const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize(
@@ -18,6 +17,8 @@ const sequelize = new Sequelize(
     console.error("Unable to connect to the database:", error);
   }
 })();
+export { sequelize };
+import _app from "./app";
 const port = process.env.PORT || 9000;
 _app.listen(port, () => {
   console.log(`App is running in port ${port}`);
