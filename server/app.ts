@@ -1,8 +1,8 @@
 import express from "express";
 const cors = require("cors");
 const cookieParse = require("cookie-parser");
-import { MiddleWareFn } from "./interfaces/MiddleWareFn";
-import userRoute from "./routes/userRoute";
+import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
+import userRoute from "./src/routes/userRoute";
 const app = express();
 app.use(
   cors({

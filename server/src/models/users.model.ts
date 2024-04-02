@@ -1,5 +1,5 @@
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "../server";
+import { sequelize } from "../../server";
 import IUser from "../interfaces/IUser";
 const bcrypt = require("bcrypt");
 
@@ -60,13 +60,4 @@ User.beforeCreate(async (user) => {
     user.confirmPassword = undefined;
   }
 });
-(async () => {
-  try {
-    await sequelize.sync({ alter: true });
-    console.log("Model synced successfully.");
-  } catch (error) {
-    console.error("Unable to sync model with database:", error);
-  }
-})();
-
 export default User;

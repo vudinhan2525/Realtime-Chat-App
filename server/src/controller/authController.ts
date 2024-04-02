@@ -1,5 +1,5 @@
 import { MiddleWareFn } from "../interfaces/MiddleWareFn";
-import User from "../models/userModel";
+import User from "../models/users.model";
 import catchAsync from "../utils/catchAsync";
 export const login = catchAsync(<MiddleWareFn>(async (req, res, next) => {
   res.status(200).json({
