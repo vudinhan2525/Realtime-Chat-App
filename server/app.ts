@@ -3,6 +3,7 @@ const cors = require("cors");
 const cookieParse = require("cookie-parser");
 import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
 import userRoute from "./src/routes/userRoute";
+import globalHandleError from "./src/controller/errorController";
 const app = express();
 app.use(
   cors({
@@ -17,4 +18,5 @@ app.use("/api/v1/users", userRoute);
 app.get("/", <MiddleWareFn>((req, res, next) => {
   res.status(200).send("Hello from the server ??!!!");
 }));
+app.use(globalHandleError);
 export default app;

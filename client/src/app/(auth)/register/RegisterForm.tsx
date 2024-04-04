@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -15,8 +16,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import http from "@/lib/http";
+import http, { sessionToken } from "@/lib/http";
 export default function RegisterForm() {
+  const router = useRouter();
   // 1. Define your form.
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
@@ -31,11 +33,22 @@ export default function RegisterForm() {
   // 2. Define a submit handler.
   async function onSubmit(values: RegisterBodyType) {
     try {
-      const response = await http.post("/users/register", values, {
+      const response = await http.post<any>("/users/register", values, {
         headers: { "Content-Type": "application/json" },
+        withCredentials: true,
       });
-      console.log(response);
-    } catch (error) {}
+      if (response?.error?.status === "failed") {
+        form.setError(response.error.field, {
+          message: response.message,
+        });
+      }
+      if (response?.status === "success") {
+        router.push("/home");
+        if (typeof window !== "undefined") {
+          sessionToken.value = response.token;
+        }
+      }
+    } catch (error: any) {}
   }
   return (
     <div className="min-w-[400px]">
