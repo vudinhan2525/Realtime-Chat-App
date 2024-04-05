@@ -12,20 +12,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import http from "@/lib/http";
+import { useRouter } from "next/navigation";
 export default function LoginForm() {
+  const router = useRouter();
+
   // 1. Define your form.
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
-      username: "",
+      email: "",
+      password: "",
     },
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: LoginBodyType) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: LoginBodyType) {
+    try {
+      const response = await http.post<any>("/users/login", values, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
+
+      if (response.status === "success") {
+        router.push("/home");
+      }
+    } catch (error: any) {}
   }
   return (
     <div className="min-w-[400px]">
@@ -33,12 +45,12 @@ export default function LoginForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="Username" {...field} />
+                  <Input placeholder="Email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -51,7 +63,7 @@ export default function LoginForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="Password" {...field} />
+                  <Input type="password" placeholder="Password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

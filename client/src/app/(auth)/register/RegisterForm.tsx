@@ -38,9 +38,12 @@ export default function RegisterForm() {
         withCredentials: true,
       });
       if (response?.error?.status === "failed") {
-        form.setError(response.error.field, {
-          message: response.message,
-        });
+        console.log(response);
+        for (let i = 0; i < response.field.length; i++) {
+          form.setError(response?.field[i], {
+            message: response?.error?.messageError,
+          });
+        }
       }
       if (response?.status === "success") {
         router.push("/home");

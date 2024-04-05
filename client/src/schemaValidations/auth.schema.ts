@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const LoginBody = z.object({
-  username: z.string().trim().min(2).max(40),
+  email: z.string().email(),
   password: z.string().min(6).max(100),
 });
 export type LoginBodyType = z.TypeOf<typeof LoginBody>;

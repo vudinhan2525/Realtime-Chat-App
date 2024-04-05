@@ -36,14 +36,37 @@ const sendJsonToken = (
   });
 };
 export const login = catchAsync(<MiddleWareFn>(async (req, res, next) => {
-  res.status(200).json({
-    status: "success",
-  });
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(
+      new AppError(
+        ["Please provide email !!!", "Please provide password !!!"],
+        400,
+        ["email", "password"]
+      )
+    );
+  }
+  const user = await User.findOne({ where: { email: req.body.email } });
+  if (!user) {
+    return next(
+      new AppError(["There is no user with this email!!!"], 400, ["email"])
+    );
+  }
+  if (!(await user.validatePassword(password))) {
+    return next(
+      new AppError(
+        ["Email or password is wrong!!!", "Email or password is wrong!!!"],
+        400,
+        ["email", "password"]
+      )
+    );
+  }
+  sendJsonToken(user.dataValues, 200, req, res);
 }));
 export const register = catchAsync(<MiddleWareFn>(async (req, res, next) => {
   const email = await User.findOne({ where: { email: req.body.email } });
   if (email) {
-    return next(new AppError("Email has been used!!!", 400, "email"));
+    return next(new AppError(["Email has been used!!!"], 400, ["email"]));
   }
   const user = await User.create({
     username: req.body.username,

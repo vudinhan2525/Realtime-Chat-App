@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="overflow-hidden">
       <body className={roboto.className}>
         <AppProvider initialSessionToken={sessionToken?.value}>
           {children}
