@@ -1,5 +1,5 @@
 interface IConversation {
   conv_id?: number;
-  title: string;
+  title: string | undefined;
 }
 export default IConversation;

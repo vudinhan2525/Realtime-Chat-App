@@ -8,22 +8,22 @@ import { socket } from "../../../socket";
 export default function ChatBox() {
   const [inputChat, setInputChat] = useState("");
 
-  useEffect(() => {
-    socket.connect();
-    socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-    });
+  // useEffect(() => {
+  //   socket.connect();
+  //   socket.on("connect", () => {
+  //     console.log("Connected to Socket.IO server");
+  //   });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected from Socket.IO server");
-    });
-    socket.on("message-from-server", (message) => {
-      console.log(message);
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  //   socket.on("disconnect", () => {
+  //     console.log("Disconnected from Socket.IO server");
+  //   });
+  //   socket.on("message-from-server", (message) => {
+  //     console.log(message);
+  //   });
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
   const handleSendMessage = () => {
     if (!socket) return;
     socket.emit("chatMessage", inputChat);

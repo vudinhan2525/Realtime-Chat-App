@@ -3,7 +3,7 @@ import { sequelize } from "../../server";
 import IConversation from "../interfaces/IConversation";
 class Conversation extends Model<IConversation> implements IConversation {
   public conv_id!: number;
-  public title: string;
+  public title: string | undefined;
 }
 Conversation.init(
   {

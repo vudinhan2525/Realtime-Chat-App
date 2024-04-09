@@ -15,7 +15,7 @@ UserConv.init(
   },
   {
     sequelize,
-    modelName: "UserConv",
+    modelName: "User_conv",
   }
 );
 UserConv.belongsTo(User, { foreignKey: "user_id" });

@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("User_conv", {
+    await queryInterface.createTable("User_convs", {
       user_id: { type: Sequelize.INTEGER, primaryKey: true },
       conv_id: { type: Sequelize.INTEGER, primaryKey: true },
       createdAt: {
@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
-    await queryInterface.addConstraint("User_conv", {
+    await queryInterface.addConstraint("User_convs", {
       fields: ["user_id"],
       type: "foreign key",
       name: "FK_UserConversation_UserId",
@@ -24,7 +24,7 @@ module.exports = {
       onDelete: "CASCADE",
       onUpdate: "CASCADE",
     });
-    await queryInterface.addConstraint("User_conv", {
+    await queryInterface.addConstraint("User_convs", {
       fields: ["conv_id"],
       type: "foreign key",
       name: "FK_UserConversation_ConversationId",
@@ -39,13 +39,13 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.removeConstraint(
-      "User_conv",
+      "User_convs",
       "FK_UserConversation_UserId"
     );
     await queryInterface.removeConstraint(
-      "User_conv",
+      "User_convs",
       "FK_UserConversation_ConversationId"
     );
-    await queryInterface.dropTable("User_conv");
+    await queryInterface.dropTable("User_convs");
   },
 };

@@ -4,6 +4,9 @@ import User from "../models/users.model";
 import catchAsync from "../utils/catchAsync";
 import { Request, Response } from "express";
 import AppError from "../utils/AppError";
+import UserConv from "../models/user_conv.model";
+import Conversation from "../models/conversation.model";
+const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const signToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -75,4 +78,54 @@ export const register = catchAsync(<MiddleWareFn>(async (req, res, next) => {
     confirmPassword: req.body.confirmPassword,
   });
   sendJsonToken(user.dataValues, 200, req, res);
+}));
+export const protect = catchAsync(<MiddleWareFn>(async (req, res, next) => {
+  let token;
+  //1) Check if token is exists
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+  if (!token) {
+    return next(new AppError(["Please login !!!"], 401, []));
+  }
+  //2) Verify token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  //3) Check if user still exists
+  const curUser = await User.findOne({ where: { user_id: decoded.id } });
+  if (!curUser) {
+    return next(new AppError(["User not exists !!!"], 400, []));
+  }
+
+  // //4) Check if user changed password
+  // if (curUser.verifyPasswordChanged(decoded.iat)) {
+  //   return next(
+  //     new AppError("User recently changed password, please try again", 401)
+  //   );
+  // }
+  //req.user = curUser;
+  res.locals.user = curUser;
+  next();
+}));
+export const getChatList = catchAsync(<MiddleWareFn>(async (req, res, next) => {
+  const user = res.locals.user.dataValues as User;
+  const userconv = await UserConv.findAll({
+    where: { user_id: user.user_id },
+  });
+  let convId;
+  userconv.forEach((element) => {
+    convId.push(element.dataValues.conv_id);
+  });
+  // const convs = await Conversation.findAll({
+  //   where: { conv_id: [...userconv] },
+  //   order:
+  // });
+  res.status(200).json({
+    status: "success",
+  });
 }));

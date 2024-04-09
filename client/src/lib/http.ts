@@ -4,7 +4,7 @@ type CustomOpts = RequestInit & {
 };
 
 const request = async <Response>(
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+  method: "POST" | "PUT" | "PATCH" | "DELETE" | "GET",
   url: string,
   body: any | undefined,
   options: CustomOpts | undefined
@@ -17,15 +17,19 @@ const request = async <Response>(
     ? `${baseUrl}${url}`
     : `${baseUrl}/${url}`;
   const { baseUrl: _baseUrl, withCredentials, ...headers } = options ?? {};
-  const result = await fetch(fullUrl, {
-    body: body ?? {},
+  let fetchOptions: RequestInit = {
     headers: {
       ...(headers.headers ?? {}),
     },
-    method,
     credentials: withCredentials ? "include" : "same-origin",
-  });
+  };
+  if (method !== "GET") {
+    fetchOptions.method = method;
+    fetchOptions.body = body ?? {};
+  }
+  const result = await fetch(fullUrl, fetchOptions);
   const data: Response = await result.json();
+
   return data;
 };
 const http = {
