@@ -4,6 +4,9 @@ const cookieParse = require("cookie-parser");
 import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
 import userRoute from "./src/routes/userRoute";
 import globalHandleError from "./src/controller/errorController";
+const http = require("http");
+import { Server } from "socket.io";
+
 const app = express();
 app.use(
   cors({
@@ -14,9 +17,28 @@ app.use(
 );
 app.use(cookieParse());
 app.use(express.json({ limit: "10kb" }));
+
 app.use("/api/v1/users", userRoute);
 app.get("/", <MiddleWareFn>((req, res, next) => {
   res.status(200).send("Hello from the server ??!!!");
 }));
 app.use(globalHandleError);
-export default app;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+io.on("connection", (socket) => {
+  console.log("Have someone!!", socket.id);
+
+  socket.on("chatMessage", (message) => {
+    console.log("Received message from client:", message);
+    io.sockets.emit("message-from-server", message);
+  });
+  socket.on("disconnect", (reason) => {
+    console.log("Disconnect", socket.id);
+  });
+});
+export default server;

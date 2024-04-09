@@ -1,8 +1,34 @@
+"use client";
 import { faPaperPlane, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { socket } from "../../../socket";
 
 export default function ChatBox() {
+  const [inputChat, setInputChat] = useState("");
+
+  useEffect(() => {
+    socket.connect();
+    socket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from Socket.IO server");
+    });
+    socket.on("message-from-server", (message) => {
+      console.log(message);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  const handleSendMessage = () => {
+    if (!socket) return;
+    socket.emit("chatMessage", inputChat);
+    setInputChat("");
+  };
   return (
     <div className="relative border-l-[1px]">
       <header className="flex sticky top-0  bg-white/80 py-3 px-6">
@@ -60,10 +86,15 @@ export default function ChatBox() {
         <div className="basis-[10%]"></div>
         <div className="flex basis-[80%] items-center relative">
           <input
+            value={inputChat}
             placeholder="Type a message..."
+            onChange={(e) => setInputChat(e.target.value)}
             className="bg-gray-100 outline-none text-[15px] w-[100%]  font-medium px-4 py-3 rounded-2xl"
           ></input>
-          <div className="absolute right-[15px] cursor-pointer">
+          <div
+            onClick={handleSendMessage}
+            className="absolute right-[15px] cursor-pointer"
+          >
             <FontAwesomeIcon
               icon={faPaperPlane}
               className="w-[25px] h-[25px] text-blue-600 hover:text-blue-700 transition-all"

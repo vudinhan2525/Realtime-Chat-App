@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config({ path: "./config.env" });
 const { Sequelize } = require("sequelize");
+
 const sequelize = new Sequelize(
   "realtime-chat",
   process.env.MYSQL_USERNAME,
@@ -18,8 +19,9 @@ const sequelize = new Sequelize(
   }
 })();
 export { sequelize };
-import _app from "./app";
+import server from "./app";
+
 const port = process.env.PORT || 9000;
-_app.listen(port, () => {
+server.listen(port, () => {
   console.log(`App is running in port ${port}`);
 });
