@@ -1,11 +1,14 @@
+import User from "../models/users.model";
+import UserConv from "../models/user_conv.model";
+import Conversation from "../models/conversation.model";
+import Message from "../models/message.model";
+
 import IUser from "../interfaces/IUser";
 import { MiddleWareFn } from "../interfaces/MiddleWareFn";
-import User from "../models/users.model";
 import catchAsync from "../utils/catchAsync";
 import { Request, Response } from "express";
 import AppError from "../utils/AppError";
-import UserConv from "../models/user_conv.model";
-import Conversation from "../models/conversation.model";
+const { Op } = require("sequelize");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 const signToken = (id: string) => {
@@ -97,7 +100,10 @@ export const protect = catchAsync(<MiddleWareFn>(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   //3) Check if user still exists
-  const curUser = await User.findOne({ where: { user_id: decoded.id } });
+  const curUser = await User.findOne({
+    where: { user_id: decoded.id },
+    logging: false,
+  });
   if (!curUser) {
     return next(new AppError(["User not exists !!!"], 400, []));
   }
@@ -114,18 +120,51 @@ export const protect = catchAsync(<MiddleWareFn>(async (req, res, next) => {
 }));
 export const getChatList = catchAsync(<MiddleWareFn>(async (req, res, next) => {
   const user = res.locals.user.dataValues as User;
-  const userconv = await UserConv.findAll({
+
+  const userconv = await UserConv.findAll<any>({
+    include: {
+      model: Conversation,
+      as: "Conversation",
+    },
     where: { user_id: user.user_id },
+    order: [[Conversation, "updatedAt", "DESC"]],
   });
-  let convId;
-  userconv.forEach((element) => {
-    convId.push(element.dataValues.conv_id);
+
+  const conversations = userconv.map<any>((userconv) => userconv.Conversation);
+  let chatListArr: any = [];
+  const chatListPromises = conversations.map(async (element, idx) => {
+    if (element.dataValues.title === null) {
+      // is 2 way chat
+      const userFriend = await UserConv.findOne<any>({
+        include: {
+          model: User,
+          as: "User",
+          attributes: ["user_id", "username"],
+        },
+        where: [
+          { user_id: { [Op.ne]: user.user_id } },
+          { conv_id: { [Op.eq]: element.dataValues.conv_id } },
+        ],
+      });
+      const lastMessage = await Message.findOne({
+        where: { conv_id: { [Op.eq]: element.dataValues.conv_id } },
+        order: [["createdAt", "DESC"]],
+        attributes: ["user_id", "message"],
+      });
+      return {
+        friend: userFriend.dataValues.User.dataValues,
+        lastMessage: lastMessage?.dataValues,
+        updatedAt: element.dataValues.updatedAt,
+        title: null,
+      };
+    } else {
+      // is group chat
+      return null;
+    }
   });
-  // const convs = await Conversation.findAll({
-  //   where: { conv_id: [...userconv] },
-  //   order:
-  // });
+  chatListArr = await Promise.all(chatListPromises);
   res.status(200).json({
     status: "success",
+    data: chatListArr,
   });
 }));

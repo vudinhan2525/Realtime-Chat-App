@@ -29,7 +29,7 @@ module.exports = {
       type: "foreign key",
       name: "FK_UserConversation_ConversationId",
       references: {
-        table: "Conversation",
+        table: "Conversations",
         field: "conv_id",
       },
       onDelete: "CASCADE",

@@ -15,6 +15,7 @@ export default (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(err);
   err.status = err.status || "error";
   err.statusCode = err.statusCode || 500;
   if (process.env.NODE_ENV === "development") {
