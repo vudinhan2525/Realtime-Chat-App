@@ -3,31 +3,44 @@ import { faPaperPlane, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { socket } from "../../../socket";
-
-export default function ChatBox() {
+import { io } from "socket.io-client";
+import { sessionToken } from "@/lib/http";
+interface MessageObj {
+  friend: {
+    username: string;
+    user_id: number;
+  };
+  data: {
+    createdAt: string;
+    message: string;
+    user_id: number;
+  }[];
+}
+export default function ChatBox({ convId }: { convId: string }) {
   const [inputChat, setInputChat] = useState("");
+  const [chatData, setChatData] = useState<MessageObj>();
+  useEffect(() => {
+    if (convId === "") return;
+    const socket = io("http://localhost:8002/");
+    socket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+      socket.emit("getChat", { convId, jwtToken: sessionToken.value });
+    });
+    socket.on("returnChat", (data) => {
+      setChatData(data);
+    });
+    socket.on("disconnect", () => {
+      console.log("Disconnected from Socket.IO server");
+    });
 
-  // useEffect(() => {
-  //   socket.connect();
-  //   socket.on("connect", () => {
-  //     console.log("Connected to Socket.IO server");
-  //   });
-
-  //   socket.on("disconnect", () => {
-  //     console.log("Disconnected from Socket.IO server");
-  //   });
-  //   socket.on("message-from-server", (message) => {
-  //     console.log(message);
-  //   });
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
+    return () => {
+      socket.disconnect();
+    };
+  }, [convId]);
   const handleSendMessage = () => {
-    if (!socket) return;
-    socket.emit("chatMessage", inputChat);
-    setInputChat("");
+    // if (!socket) return;
+    // socket.emit("chatMessage", inputChat);
+    // setInputChat("");
   };
   return (
     <div className="relative border-l-[1px]">
@@ -53,33 +66,20 @@ export default function ChatBox() {
       <div className="h-[80vh] overflow-auto py-4">
         <div className="flex justify-center text-sm text-gray-400">6:42 PM</div>
         <div className="mx-3 my-3 rounded-[25px] overflow-hidden flex flex-col gap-1">
-          <div className="px-4 py-2 bg-white text-[15px] font-medium rounded-br-[25px] rounded-tr-[25px] rounded-r text-gray-700 max-w-fit">
-            Chưa chắc là kinh đâu
-          </div>
-          <div className="px-4 py-2 bg-white text-[15px] font-medium rounded-br-[25px] rounded-tr-[25px] rounded-r text-gray-700 max-w-fit">
-            Vô trỏng có khi cậu lại ghiền kh mún ra
-          </div>
-          <div className="px-4 py-2 bg-white text-[15px] font-medium rounded-br-[25px] rounded-tr-[25px] rounded-r text-gray-700 max-w-fit">
-            Còn kh cậu lấy đth
-          </div>
-          <div className="px-4 py-2 bg-white text-[15px] font-medium rounded-br-[25px] rounded-tr-[25px] rounded-r text-gray-700 max-w-fit">
-            Tớ tưởng tượng đc mặt cậu khi đọc xong dòng ấy lun ấy kkkkkk
-          </div>
-        </div>
-        <div className="flex justify-center text-sm text-gray-400">6:48 PM</div>
-        <div className="mx-3 my-3 rounded-[25px] overflow-hidden flex flex-col gap-1">
-          <div className="px-4 bg-blue-600 text-white py-2 ml-auto  text-[15px] font-medium rounded-bl-[25px] rounded-tl-[25px] rounded-r  max-w-fit">
-            thôi cứ từ từ
-          </div>
-          <div className="px-4 bg-blue-600 text-white py-2 ml-auto  text-[15px] font-medium rounded-bl-[25px] rounded-tl-[25px] rounded-r  max-w-fit">
-            xong r nhắn tớ
-          </div>
-          <div className="px-4 bg-blue-600 text-white py-2 ml-auto  text-[15px] font-medium rounded-bl-[25px] rounded-tl-[25px] rounded-r  max-w-fit">
-            có đi ăn k
-          </div>
-          <div className="px-4 bg-blue-600 text-white py-2 ml-auto  text-[15px] font-medium rounded-bl-[25px] rounded-tl-[25px] rounded-r  max-w-fit">
-            để tớ ăn ở nhà
-          </div>
+          {chatData?.data?.map((el, idx) => {
+            return (
+              <div
+                key={idx}
+                className={`px-4 ${
+                  el.user_id === chatData.friend.user_id
+                    ? "bg-white text-gray-700 rounded-br-[25px] rounded-tr-[25px]"
+                    : "bg-blue-600 text-white ml-auto rounded-bl-[25px] rounded-tl-[25px]"
+                }   py-2  text-[15px] font-medium   max-w-fit`}
+              >
+                {el.message}
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="sticky bottom-0 flex items-center justify-center bg-white py-2">

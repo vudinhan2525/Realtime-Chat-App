@@ -3,23 +3,30 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import http from "@/lib/http";
 import formatDate from "@/lib/formatDate";
-export default function ChatBar() {
-  const [chatList, setChatList] = useState<
-    {
-      friend: {
-        user_id: number;
-        username: string;
-      };
-      title: string;
-      lastMessage: {
-        user_id: number;
-        message: string;
-      };
-      updatedAt: string;
-    }[]
-  >();
+interface IChatList {
+  friend: {
+    user_id: number;
+    username: string;
+  };
+  title: string;
+  lastMessage: {
+    user_id: number;
+    message: string;
+  };
+  updatedAt: string;
+  conv_id: string;
+}
+export default function ChatBar({
+  convId,
+  setConvId,
+}: {
+  convId: string;
+  setConvId: React.Dispatch<React.SetStateAction<string>>;
+}) {
+  const [chatList, setChatList] = useState<IChatList[]>();
   useEffect(() => {
     getChatList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const getChatList = async () => {
     try {
@@ -28,6 +35,9 @@ export default function ChatBar() {
         withCredentials: true,
       });
       setChatList(response.data);
+      if (response.data.length > 0) {
+        setConvId(response.data[0].conv_id);
+      }
     } catch (error) {}
   };
   return (
@@ -36,8 +46,11 @@ export default function ChatBar() {
         {chatList?.map((el, idx) => {
           return (
             <li
+              onClick={() => setConvId(el.conv_id)}
               key={idx}
-              className="flex px-4 gap-2 cursor-pointer hover:bg-gray-100 py-1 transition-all"
+              className={`flex px-4 gap-2 cursor-pointer hover:bg-gray-100 py-1 transition-all ${
+                el.conv_id === convId && "bg-gray-100"
+              }`}
             >
               <div className="min-w-[60px] relative">
                 <Image

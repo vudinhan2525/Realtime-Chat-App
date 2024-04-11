@@ -4,6 +4,7 @@ const cookieParse = require("cookie-parser");
 import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
 import userRoute from "./src/routes/userRoute";
 import globalHandleError from "./src/controller/errorController";
+import { getChat } from "./src/utils/getData";
 const http = require("http");
 import { Server } from "socket.io";
 
@@ -39,6 +40,10 @@ io.on("connection", (socket) => {
   });
   socket.on("disconnect", (reason) => {
     console.log("Disconnect", socket.id);
+  });
+  socket.on("getChat", async ({ convId, jwtToken }) => {
+    const data = await getChat(convId, jwtToken);
+    socket.emit("returnChat", data);
   });
 });
 export default server;

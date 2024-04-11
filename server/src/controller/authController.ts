@@ -156,6 +156,7 @@ export const getChatList = catchAsync(<MiddleWareFn>(async (req, res, next) => {
         lastMessage: lastMessage?.dataValues,
         updatedAt: element.dataValues.updatedAt,
         title: null,
+        conv_id: element.dataValues.conv_id,
       };
     } else {
       // is group chat
