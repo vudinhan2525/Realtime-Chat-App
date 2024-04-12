@@ -54,11 +54,12 @@ export default function ChatBar({
             >
               <div className="min-w-[60px] relative">
                 <Image
-                  src="https://images.pexels.com/photos/20450982/pexels-photo-20450982/free-photo-of-th-i-trang-dan-ong-nh-ng-ng-i-dan-ba.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                  className="h-[60px] border-[1px] p-1 w-[60px] rounded-full object-contain"
+                  src="https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1677509740.jpg"
+                  className="h-[60px] border-[1px] w-[60px] rounded-full object-contain"
                   height={60}
                   width={60}
                   quality={100}
+                  priority
                   alt="Picture of the author"
                 />
                 <div className="bg-green-500 w-[15px] h-[15px] border-[2px] border-white absolute bottom-[3px] right-[3px] rounded-full"></div>

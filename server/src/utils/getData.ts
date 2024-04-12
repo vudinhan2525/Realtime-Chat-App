@@ -42,5 +42,28 @@ export const getChat = async (convId: number, jwtToken: string) => {
     }
     const data = { status: "success" };
     return data;
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const addMessage = async (
+  message: string,
+  jwtToken: string,
+  convId: number
+) => {
+  try {
+    const decoded = await promisify(jwt.verify)(
+      jwtToken,
+      process.env.JWT_SECRET
+    );
+    const userId = decoded.id;
+    const response = await Message.create({
+      message: message,
+      user_id: userId,
+      conv_id: convId,
+    });
+    return response.dataValues;
+  } catch (error) {
+    console.log(error);
+  }
 };

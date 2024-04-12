@@ -4,7 +4,7 @@ const cookieParse = require("cookie-parser");
 import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
 import userRoute from "./src/routes/userRoute";
 import globalHandleError from "./src/controller/errorController";
-import { getChat } from "./src/utils/getData";
+import { getChat, addMessage } from "./src/utils/getData";
 const http = require("http");
 import { Server } from "socket.io";
 
@@ -34,10 +34,17 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("Have someone!!", socket.id);
 
-  socket.on("chatMessage", (message) => {
-    console.log("Received message from client:", message);
-    io.sockets.emit("message-from-server", message);
-  });
+  socket.on(
+    "send-message-from-client",
+    async (data: { message: string; jwtToken: string; convId: number }) => {
+      const message = await addMessage(
+        data.message,
+        data.jwtToken,
+        data.convId
+      );
+      io.sockets.emit("send-message-from-server", message);
+    }
+  );
   socket.on("disconnect", (reason) => {
     console.log("Disconnect", socket.id);
   });
