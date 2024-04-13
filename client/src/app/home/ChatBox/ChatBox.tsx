@@ -1,11 +1,16 @@
 "use client";
-import { faPaperPlane, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFaceSmile,
+  faPaperPlane,
+  faThumbsUp,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { sessionToken } from "@/lib/http";
 import formatDate from "@/lib/formatDate";
+import parseIcons, { emojis } from "@/lib/parseIcon";
 interface MessageObj {
   friend: {
     username: string;
@@ -20,6 +25,8 @@ interface MessageObj {
 export default function ChatBox({ convId }: { convId: string }) {
   const [inputChat, setInputChat] = useState("");
   const [chatData, setChatData] = useState<MessageObj>();
+  const [showEmojiBoard, setShowEmojiBoard] = useState(false);
+  const emojiBoardRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
   useEffect(() => {
     if (convId === "") return;
@@ -53,7 +60,7 @@ export default function ChatBox({ convId }: { convId: string }) {
   }, [convId]);
   const handleSendMessage = () => {
     const socket = socketRef.current;
-    if (!socket || !convId) return;
+    if (!socket || !convId || inputChat.trim() === "") return;
 
     socket.emit("send-message-from-client", {
       message: inputChat,
@@ -120,6 +127,22 @@ export default function ChatBox({ convId }: { convId: string }) {
     }
     return <div>{jsxArr}</div>;
   };
+  const handleEmojiClick = (emoji: string) => {
+    setInputChat((prevInputChat) => prevInputChat + emoji);
+  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!emojiBoardRef.current?.contains(event.target as Node)) {
+        setShowEmojiBoard(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   return (
     <div className="relative border-l-[1px]">
       <header className="flex sticky top-0  bg-white/80 py-3 px-6">
@@ -150,24 +173,51 @@ export default function ChatBox({ convId }: { convId: string }) {
         <div className="flex basis-[80%] items-center relative">
           <input
             value={inputChat}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSendMessage();
+              }
+            }}
             placeholder="Type a message..."
-            onChange={(e) => setInputChat(e.target.value)}
+            onChange={(e) => setInputChat(parseIcons(e.target.value))}
             className="bg-gray-100 outline-none text-[15px] w-[100%]  font-medium px-4 py-3 rounded-2xl"
           ></input>
-          <div
-            onClick={handleSendMessage}
-            className="absolute right-[15px] cursor-pointer"
-          >
-            <FontAwesomeIcon
-              icon={faPaperPlane}
-              className="w-[25px] h-[25px] text-blue-600 hover:text-blue-700 transition-all"
-            ></FontAwesomeIcon>
+          <div className="absolute right-[15px] flex gap-4">
+            <div ref={emojiBoardRef} className="relative">
+              <FontAwesomeIcon
+                onClick={() => setShowEmojiBoard((prev) => !prev)}
+                icon={faFaceSmile}
+                className="w-[25px] cursor-pointer h-[25px] text-blue-600 hover:text-blue-700 transition-all"
+              ></FontAwesomeIcon>
+              <div
+                className={`absolute w-[300px] ${
+                  showEmojiBoard ? "block" : "hidden"
+                } h-[200px] p-4 bg-white border-[1px] rounded-2xl shadow-lg right-[50%] translate-x-[50%] bottom-[40px]`}
+              >
+                {emojis.map((emoji, index) => (
+                  <span
+                    key={index}
+                    onClick={() => handleEmojiClick(emoji)}
+                    style={{ cursor: "pointer", marginRight: "5px" }}
+                    className="text-xl select-none"
+                  >
+                    {emoji}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div onClick={handleSendMessage} className="">
+              <FontAwesomeIcon
+                icon={faPaperPlane}
+                className="w-[25px] cursor-pointer h-[25px] text-blue-600 hover:text-blue-700 transition-all"
+              ></FontAwesomeIcon>
+            </div>
           </div>
         </div>
         <div className="basis-[10%] flex justify-center">
           <FontAwesomeIcon
             icon={faThumbsUp}
-            className="w-[30px] h-[30px] text-blue-600 hover:text-blue-700 transition-all cursor-pointer"
+            className="w-[30px]  h-[30px] text-blue-600 hover:text-blue-700 transition-all cursor-pointer"
           ></FontAwesomeIcon>
         </div>
       </div>
