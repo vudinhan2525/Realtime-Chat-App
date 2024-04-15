@@ -4,7 +4,7 @@ const cookieParse = require("cookie-parser");
 import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
 import userRoute from "./src/routes/userRoute";
 import globalHandleError from "./src/controller/errorController";
-import { getChat, addMessage } from "./src/utils/getData";
+import { addMessage, getAllChat } from "./src/utils/getData";
 const http = require("http");
 import { Server } from "socket.io";
 
@@ -31,9 +31,10 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
+const connectedUsers = new Map();
 io.on("connection", (socket) => {
   console.log("Have someone!!", socket.id);
-
+  connectedUsers.set(socket.id, { lastActive: Date.now() });
   socket.on(
     "send-message-from-client",
     async (data: { message: string; jwtToken: string; convId: number }) => {
@@ -47,10 +48,12 @@ io.on("connection", (socket) => {
   );
   socket.on("disconnect", (reason) => {
     console.log("Disconnect", socket.id);
+    connectedUsers.delete(socket.id);
   });
-  socket.on("getChat", async ({ convId, jwtToken }) => {
-    const data = await getChat(convId, jwtToken);
-    socket.emit("returnChat", data);
+
+  socket.on("getChatData", async ({ jwtToken }) => {
+    const res = await getAllChat(jwtToken);
+    socket.emit("returnAllChat", res);
   });
 });
 export default server;

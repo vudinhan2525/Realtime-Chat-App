@@ -1,55 +1,28 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
-import http from "@/lib/http";
 import formatDate from "@/lib/formatDate";
-interface IChatList {
-  friend: {
-    user_id: number;
-    username: string;
-  };
-  title: string;
-  lastMessage: {
-    user_id: number;
-    message: string;
-  };
-  updatedAt: string;
-  conv_id: string;
-}
+import MessageObj from "@/interfaces/IChatData";
+
 export default function ChatBar({
-  convId,
-  setConvId,
+  selectedItem,
+  setSelectedItem,
+  chatData,
 }: {
-  convId: string;
-  setConvId: React.Dispatch<React.SetStateAction<string>>;
+  selectedItem: number;
+  setSelectedItem: React.Dispatch<React.SetStateAction<number>>;
+  chatData: MessageObj[];
 }) {
-  const [chatList, setChatList] = useState<IChatList[]>();
-  useEffect(() => {
-    getChatList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const getChatList = async () => {
-    try {
-      const response = await http.get<any>("/users/chatlist", {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
-      setChatList(response.data);
-      if (response.data.length > 0) {
-        setConvId(response.data[0].conv_id);
-      }
-    } catch (error) {}
-  };
   return (
     <div>
       <ul className="mt-4">
-        {chatList?.map((el, idx) => {
+        {chatData?.map((el, idx) => {
           return (
             <li
-              onClick={() => setConvId(el.conv_id)}
+              onClick={() => setSelectedItem(idx)}
               key={idx}
               className={`flex px-4 gap-2 cursor-pointer hover:bg-gray-100 py-1 transition-all ${
-                el.conv_id === convId && "bg-gray-100"
+                selectedItem === idx && "bg-gray-100"
               }`}
             >
               <div className="min-w-[60px] relative">
@@ -68,10 +41,10 @@ export default function ChatBar({
                 <p className="font-bold">{el.friend.username}</p>
                 <div className="flex items-center w-full gap-2">
                   <p className="text-sm basis-[70%] text-gray-400 font-medium line-clamp-1">
-                    {el.title === null && el.lastMessage?.message}
+                    {el.friend && el.data[el.data.length - 1]?.message}
                   </p>
                   <div className="text-sm basis-[30%] text-gray-400 font-medium line-clamp-1">
-                    {formatDate(el?.updatedAt)}
+                    {formatDate(el.data[el.data.length - 1]?.createdAt)}
                   </div>
                 </div>
               </div>

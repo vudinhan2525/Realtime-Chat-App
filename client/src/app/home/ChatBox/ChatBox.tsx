@@ -6,66 +6,31 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { sessionToken } from "@/lib/http";
 import formatDate from "@/lib/formatDate";
 import parseIcons, { emojis } from "@/lib/parseIcon";
-interface MessageObj {
-  friend: {
-    username: string;
-    user_id: number;
-  };
-  data: {
-    createdAt: string;
-    message: string;
-    user_id: number;
-  }[];
-}
-export default function ChatBox({ convId }: { convId: string }) {
+import MessageObj from "../../../interfaces/IChatData";
+export default function ChatBox({
+  socket,
+  chatData,
+  setChatData,
+}: {
+  socket: any;
+  chatData: MessageObj;
+  setChatData: Dispatch<SetStateAction<MessageObj[]>>;
+}) {
   const [inputChat, setInputChat] = useState("");
-  const [chatData, setChatData] = useState<MessageObj>();
+  //const [chatData, setChatData] = useState<MessageObj>();
   const [showEmojiBoard, setShowEmojiBoard] = useState(false);
   const emojiBoardRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<any>(null);
-  useEffect(() => {
-    if (convId === "") return;
-    const socket = io("http://localhost:8002/");
-    socketRef.current = socket;
-    socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-      socket.emit("getChat", { convId, jwtToken: sessionToken.value });
-    });
-    socket.on("returnChat", (data) => {
-      setChatData(data);
-    });
-    socket.on("send-message-from-server", (message) => {
-      setChatData((prevChatData) => {
-        console.log(1);
-        if (prevChatData) {
-          const newData = [...prevChatData.data, message];
-          return { ...prevChatData, data: newData };
-        } else {
-          return prevChatData;
-        }
-      });
-    });
-    socket.on("disconnect", () => {
-      console.log("Disconnected from Socket.IO server");
-    });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [convId]);
   const handleSendMessage = () => {
-    const socket = socketRef.current;
-    if (!socket || !convId || inputChat.trim() === "") return;
-
+    if (!socket || !chatData || inputChat.trim() === "") return;
     socket.emit("send-message-from-client", {
       message: inputChat,
       jwtToken: sessionToken.value,
-      convId: convId,
+      convId: chatData.conv_id,
     });
     setInputChat("");
   };

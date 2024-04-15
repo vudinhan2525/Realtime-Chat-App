@@ -4,11 +4,44 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import ChatBox from "./ChatBox/ChatBox";
 import ChatBar from "./ChatBar/ChatBar";
-import { useState } from "react";
+import { io } from "socket.io-client";
+import { sessionToken } from "@/lib/http";
+import { useState, useEffect } from "react";
+import MessageObj from "@/interfaces/IChatData";
 export default function HomePage() {
   //const cookieStore = cookies();
   //const sessionToken = cookieStore.get("jwt");
-  const [convId, setConvId] = useState("");
+  const [socket, setSocket] = useState<any>(null);
+  const [chatData, setChatData] = useState<MessageObj[]>([]);
+  const [selectedItem, setSelectedItem] = useState(0);
+  useEffect(() => {
+    const socket = io("http://localhost:8002/");
+    setSocket(socket);
+    socket.emit("getChatData", { jwtToken: sessionToken.value });
+    socket.on("returnAllChat", (res) => {
+      setChatData(res);
+    });
+    socket.on("send-message-from-server", (message: any) => {
+      setChatData((prevChatData) => {
+        const updatedChatData = prevChatData.map((conversation) => {
+          if (conversation.conv_id === message.conv_id) {
+            return {
+              ...conversation,
+              data: [...conversation.data, message],
+            };
+          }
+          return conversation;
+        });
+        return updatedChatData;
+      });
+    });
+    socket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
   return (
     <div className="flex">
       <div className="basis-[25%]">
@@ -22,10 +55,18 @@ export default function HomePage() {
             placeholder="Search"
           ></input>
         </div>
-        <ChatBar convId={convId} setConvId={setConvId}></ChatBar>
+        <ChatBar
+          selectedItem={selectedItem}
+          setSelectedItem={setSelectedItem}
+          chatData={chatData}
+        ></ChatBar>
       </div>
       <div className="basis-[75%] bg-gray-100 ">
-        <ChatBox convId={convId}></ChatBox>
+        <ChatBox
+          chatData={chatData[selectedItem]}
+          setChatData={setChatData}
+          socket={socket}
+        ></ChatBox>
       </div>
     </div>
   );
