@@ -4,7 +4,7 @@ const cookieParse = require("cookie-parser");
 import { MiddleWareFn } from "./src/interfaces/MiddleWareFn";
 import userRoute from "./src/routes/userRoute";
 import globalHandleError from "./src/controller/errorController";
-import { addMessage, getAllChat } from "./src/utils/getData";
+import { addMessage, getAllChat, updateUserStatus } from "./src/utils/getData";
 const http = require("http");
 import { Server } from "socket.io";
 
@@ -31,10 +31,13 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-const connectedUsers = new Map();
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("Have someone!!", socket.id);
-  connectedUsers.set(socket.id, { lastActive: Date.now() });
+  socket.on("getChatData", async ({ jwtToken }) => {
+    await updateUserStatus(jwtToken, true);
+    const res = await getAllChat(jwtToken);
+    socket.emit("returnAllChat", res);
+  });
   socket.on(
     "send-message-from-client",
     async (data: { message: string; jwtToken: string; convId: number }) => {
@@ -46,14 +49,12 @@ io.on("connection", (socket) => {
       io.sockets.emit("send-message-from-server", message);
     }
   );
+  socket.on("dc-from-client", async ({ jwtToken }) => {
+    await updateUserStatus(jwtToken, false);
+  });
   socket.on("disconnect", (reason) => {
     console.log("Disconnect", socket.id);
-    connectedUsers.delete(socket.id);
-  });
-
-  socket.on("getChatData", async ({ jwtToken }) => {
-    const res = await getAllChat(jwtToken);
-    socket.emit("returnAllChat", res);
   });
 });
+
 export default server;

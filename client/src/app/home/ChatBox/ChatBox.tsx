@@ -14,16 +14,14 @@ import MessageObj from "../../../interfaces/IChatData";
 export default function ChatBox({
   socket,
   chatData,
-  setChatData,
 }: {
   socket: any;
   chatData: MessageObj;
-  setChatData: Dispatch<SetStateAction<MessageObj[]>>;
 }) {
   const [inputChat, setInputChat] = useState("");
-  //const [chatData, setChatData] = useState<MessageObj>();
   const [showEmojiBoard, setShowEmojiBoard] = useState(false);
   const emojiBoardRef = useRef<HTMLDivElement>(null);
+  const chatHistoryRef = useRef<HTMLDivElement>(null);
 
   const handleSendMessage = () => {
     if (!socket || !chatData || inputChat.trim() === "") return;
@@ -32,6 +30,7 @@ export default function ChatBox({
       jwtToken: sessionToken.value,
       convId: chatData.conv_id,
     });
+
     setInputChat("");
   };
   const differenceInMinutes = (a: string, b: string) => {
@@ -108,6 +107,11 @@ export default function ChatBox({
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+  useEffect(() => {
+    if (chatHistoryRef.current) {
+      chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+    }
+  }, [chatData]);
   return (
     <div className="relative border-l-[1px]">
       <header className="flex sticky top-0  bg-white/80 py-3 px-6">
@@ -130,7 +134,7 @@ export default function ChatBox({
           </div>
         </div>
       </header>
-      <div className="h-[80vh] overflow-auto py-4">
+      <div ref={chatHistoryRef} className="h-[80vh] overflow-auto py-4">
         {getChatHistory(chatData)}
       </div>
       <div className="sticky bottom-0 flex items-center justify-center bg-white py-2">

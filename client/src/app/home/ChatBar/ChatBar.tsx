@@ -35,7 +35,11 @@ export default function ChatBar({
                   priority
                   alt="Picture of the author"
                 />
-                <div className="bg-green-500 w-[15px] h-[15px] border-[2px] border-white absolute bottom-[3px] right-[3px] rounded-full"></div>
+                <div
+                  className={`${
+                    el.friend!.isActive ? "block" : "hidden"
+                  } bg-green-500 w-[15px] h-[15px] border-[2px] border-white absolute bottom-[3px] right-[3px] rounded-full`}
+                ></div>
               </div>
               <div className="flex w-full flex-col py-2">
                 <p className="font-bold">{el.friend.username}</p>

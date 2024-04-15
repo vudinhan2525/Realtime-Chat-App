@@ -51,7 +51,7 @@ export const getAllChat = async (jwtToken: string) => {
         });
         const friend = await User.findOne({
           where: { user_id: friendId },
-          attributes: ["username", "user_id"],
+          attributes: ["username", "user_id", "isActive", "lastActive"],
         });
         const message = await Message.findAll({
           where: { conv_id: convIds[i].dataValues.conv_id },
@@ -70,6 +70,24 @@ export const getAllChat = async (jwtToken: string) => {
       }
     }
     return resArr;
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const updateUserStatus = async (jwtToken: string, isActive: boolean) => {
+  try {
+    const decoded = await promisify(jwt.verify)(
+      jwtToken,
+      process.env.JWT_SECRET
+    );
+    const userId = decoded.id;
+    await User.update(
+      {
+        isActive: isActive,
+        lastActive: new Date(),
+      },
+      { where: { user_id: userId } }
+    );
   } catch (error) {
     console.log(error);
   }

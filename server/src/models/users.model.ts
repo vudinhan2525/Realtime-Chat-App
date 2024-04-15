@@ -9,6 +9,8 @@ class User extends Model<IUser> implements IUser {
   public email!: string;
   public password!: string;
   public confirmPassword!: string | undefined;
+  public isActive!: boolean;
+  public lastActive!: Date;
 
   async validatePassword(value: string): Promise<boolean> {
     return bcrypt.compare(value, this.password);
@@ -35,6 +37,12 @@ User.init(
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+    },
+    lastActive: {
+      type: DataTypes.DATE,
     },
     confirmPassword: {
       type: DataTypes.STRING,

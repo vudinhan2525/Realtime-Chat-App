@@ -9,17 +9,17 @@ import { sessionToken } from "@/lib/http";
 import { useState, useEffect } from "react";
 import MessageObj from "@/interfaces/IChatData";
 export default function HomePage() {
-  //const cookieStore = cookies();
-  //const sessionToken = cookieStore.get("jwt");
   const [socket, setSocket] = useState<any>(null);
   const [chatData, setChatData] = useState<MessageObj[]>([]);
   const [selectedItem, setSelectedItem] = useState(0);
+
   useEffect(() => {
     const socket = io("http://localhost:8002/");
     setSocket(socket);
     socket.emit("getChatData", { jwtToken: sessionToken.value });
     socket.on("returnAllChat", (res) => {
       setChatData(res);
+      console.log(res);
     });
     socket.on("send-message-from-server", (message: any) => {
       setChatData((prevChatData) => {
@@ -38,10 +38,22 @@ export default function HomePage() {
     socket.on("connect", () => {
       console.log("Connected to Socket.IO server");
     });
+    const handleUnload = () => {
+      socket.emit("dc-from-client", { jwtToken: sessionToken.value });
+    };
+    window.addEventListener("beforeunload", handleUnload);
     return () => {
+      window.removeEventListener("beforeunload", handleUnload);
       socket.disconnect();
     };
   }, []);
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      console.log(1);
+      socket.emit("getChatData", { jwtToken: sessionToken.value });
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, [socket]);
   return (
     <div className="flex">
       <div className="basis-[25%]">
@@ -62,11 +74,7 @@ export default function HomePage() {
         ></ChatBar>
       </div>
       <div className="basis-[75%] bg-gray-100 ">
-        <ChatBox
-          chatData={chatData[selectedItem]}
-          setChatData={setChatData}
-          socket={socket}
-        ></ChatBox>
+        <ChatBox chatData={chatData[selectedItem]} socket={socket}></ChatBox>
       </div>
     </div>
   );

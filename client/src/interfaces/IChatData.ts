@@ -3,6 +3,8 @@ interface MessageObj {
   friend: {
     username: string;
     user_id: number;
+    isActive: boolean;
+    lastActive: string;
   };
   data: {
     createdAt: string;

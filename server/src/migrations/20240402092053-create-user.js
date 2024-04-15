@@ -38,6 +38,12 @@ module.exports = {
       updatedAt: {
         type: Sequelize.DATE,
       },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+      },
+      lastActive: {
+        type: Sequelize.DATE,
+      },
     });
   },
 
