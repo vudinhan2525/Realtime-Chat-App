@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import formatDate from "@/lib/formatDate";
+import formatDate, { calculateTimeAgo } from "@/lib/formatDate";
 import MessageObj from "@/interfaces/IChatData";
 
 export default function ChatBar({
@@ -40,6 +40,12 @@ export default function ChatBar({
                     el.friend!.isActive ? "block" : "hidden"
                   } bg-green-500 w-[15px] h-[15px] border-[2px] border-white absolute bottom-[3px] right-[3px] rounded-full`}
                 ></div>
+                {el?.friend.isActive === false &&
+                  calculateTimeAgo(el?.friend.lastActive) && (
+                    <div className="bg-green-200 w-[23px] h-[13px] justify-center text-[11px] px-3 py-2 font-bold flex items-center border-[2px] text-green-600 border-white absolute bottom-[4px] right-[-4px] rounded-full">
+                      {`${calculateTimeAgo(el?.friend.lastActive)}m`}
+                    </div>
+                  )}
               </div>
               <div className="flex w-full flex-col py-2">
                 <p className="font-bold">{el.friend.username}</p>

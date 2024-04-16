@@ -28,3 +28,21 @@ export default function formatDate(isoDateString: string): string {
   // Format date in abbreviated month and year format (e.g., Jan 2023)
   return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
+export function calculateTimeAgo(isoString: string): number | null {
+  const currentDate = new Date();
+  const pastDate = new Date(isoString);
+
+  // Calculate the difference in milliseconds
+  const differenceMs = currentDate.getTime() - pastDate.getTime();
+
+  // Convert milliseconds to minutes
+  const minutesAgo = Math.round(differenceMs / (1000 * 60));
+
+  // If it's more than 1 hour ago, return null
+  if (minutesAgo >= 60 || minutesAgo === 0) {
+    return null;
+  }
+
+  // Otherwise, return the time ago string
+  return minutesAgo;
+}

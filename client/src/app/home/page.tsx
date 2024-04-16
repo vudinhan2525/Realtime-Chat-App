@@ -19,7 +19,6 @@ export default function HomePage() {
     socket.emit("getChatData", { jwtToken: sessionToken.value });
     socket.on("returnAllChat", (res) => {
       setChatData(res);
-      console.log(res);
     });
     socket.on("send-message-from-server", (message: any) => {
       setChatData((prevChatData) => {
@@ -49,7 +48,6 @@ export default function HomePage() {
   }, []);
   useEffect(() => {
     const intervalId = setInterval(() => {
-      console.log(1);
       socket.emit("getChatData", { jwtToken: sessionToken.value });
     }, 60000);
     return () => clearInterval(intervalId);

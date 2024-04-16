@@ -44,6 +44,7 @@ const parseIcons = (input: string) => {
     ":-#": "😡", // Grumpy
     ":-X": "😶", // Lips sealed
     ":\\$": "😳", // Blush
+    ":like:": "👍",
   };
 
   // Replace text patterns with corresponding icons
@@ -96,5 +97,6 @@ export const emojis = [
   "😡", // Grumpy
   "😶", // Lips sealed
   "😳", // Blush
+  "👍",
 ];
 export default parseIcons;
